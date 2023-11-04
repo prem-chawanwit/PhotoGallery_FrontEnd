@@ -50,6 +50,23 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router"; // Import the router
+
+const store = useStore();
+// Define a function to check the login status
+const checkLoginStatus = async () => {
+  let loggedIn = localStorage.getItem("user");
+  const ParseloggedIn = JSON.parse(loggedIn);
+  if (ParseloggedIn) {
+    const { user } = ParseloggedIn.data;
+    const { username, roles } = user;
+  }
+};
+// Call the checkLoginStatus function when the component mounts
+onMounted(checkLoginStatus);
+
 const sendCV = () => {
   // To open a new window with your CV:
   window.open("../../public/files/cv/ChawanwitKan_CV.pdf", "_blank");

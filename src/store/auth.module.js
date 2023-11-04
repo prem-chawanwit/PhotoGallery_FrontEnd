@@ -10,8 +10,8 @@ export const auth = {
   namespaced: true,
   state: initialState,
   actions: {
-    login({ commit }, user) {
-      return AuthService.login(user).then(
+    login({ commit }, userData) {
+      return AuthService.login(userData.username,userData.password).then(
         user => {
           commit('loginSuccess', user);
           return Promise.resolve(user);
@@ -22,8 +22,8 @@ export const auth = {
         }
       );
     },
-    logout({ commit }) {
-      AuthService.logout();
+    logout({ commit }, username) {
+      AuthService.logout(username);
       commit('logout');
     },
     register({ commit }, user) {
@@ -34,6 +34,28 @@ export const auth = {
         },
         error => {
           commit('registerFailure');
+          return Promise.reject(error);
+        }
+      );
+    },
+    checkLogin({ commit }, username) {
+      console.log('check login param username -> ',username)
+      return AuthService.checkLogin(username).then(
+        (response) => {
+          // Handle the response data as needed, e.g., update state.
+          if (response.success) {
+            // User is logged in
+            console.log('check login sucess response -> ',response)
+            commit('loginSuccess', response);
+          } else {
+            // User is not logged in
+            console.log('check login fail response -> ',response)
+            commit('loginFailure');
+          }
+          return Promise.resolve(response);
+        },
+        (error) => {
+          commit('loginFailure');
           return Promise.reject(error);
         }
       );

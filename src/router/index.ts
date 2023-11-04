@@ -118,15 +118,25 @@ router.beforeEach((to, from, next) => {
   const publicPages = ['/login', '/register', '/home'];
   const authRequired = !publicPages.includes(to.path);
   const loggedIn = localStorage.getItem('user');
+  const ParseloggedIn = JSON.parse(loggedIn);
 
+  if (ParseloggedIn) {
+    const { user } = ParseloggedIn.data;
+    const { username, roles } = user;
+    console.log(username); // Access the username
+    console.log(roles); // Access the roles
+  }
   // trying to access a restricted page + not logged in
   // redirect to login page
-  console.log(loggedIn)
   if (authRequired && !loggedIn) {
     console.log('xxxx')
     next('/login');
   } else {
-    console.log('yyyy')
+    if (loggedIn && loggedIn.user) {
+      const { username, roles } = loggedIn.user;
+      console.log('username',username); // Access the username
+      console.log('roles',roles); // Access the roles
+    }
     next();
   }
 });
