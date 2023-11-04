@@ -3,6 +3,8 @@
 //import store from '@/store'; // Import your Vuex store
 //import { checkTokenValidity } from '@/services/auth';
 import { createRouter, createWebHistory } from 'vue-router'
+import { useStore } from "vuex";
+
 // import Home from "../components/Home.vue";
 // import Login from "../components/Login.vue";
 // import Register from "../components/Register.vue";
@@ -119,23 +121,37 @@ router.beforeEach((to, from, next) => {
   const authRequired = !publicPages.includes(to.path);
   const loggedIn = localStorage.getItem('user');
   const ParseloggedIn = JSON.parse(loggedIn);
+  const store = useStore();
 
-  if (ParseloggedIn) {
-    const { user } = ParseloggedIn.data;
-    const { username, roles } = user;
-    console.log(username); // Access the username
-    console.log(roles); // Access the roles
-  }
   // trying to access a restricted page + not logged in
   // redirect to login page
+  console.log('asdsadsa')
+
   if (authRequired && !loggedIn) {
-    console.log('xxxx')
+    console.log('zzz')
     next('/login');
   } else {
-    if (loggedIn && loggedIn.user) {
-      const { username, roles } = loggedIn.user;
-      console.log('username',username); // Access the username
-      console.log('roles',roles); // Access the roles
+    console.log(ParseloggedIn)
+    //let check again
+    if (ParseloggedIn) {
+      console.log('uuuuu')
+
+      const { user } = ParseloggedIn.data;
+      const { username, roles } = user;
+
+      console.log('asdsadsa')
+      store
+        .dispatch("auth/checkLogin", username)
+        .then(
+          (response) => {
+            console.log('routerCheckLogin',response)
+
+            next();
+          },
+          (error) => {
+            next('/login');
+          }
+        );
     }
     next();
   }

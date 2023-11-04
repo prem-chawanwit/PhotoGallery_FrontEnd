@@ -50,6 +50,12 @@ class AuthService {
         // headers: authHeader(),
       })
       .then((response) => {
+        if (!response.data.data) {
+          console.log('expired')
+          localStorage.removeItem("user");
+        } else {
+          console.log('valid token')
+        }
         return response.data;
       });
   }

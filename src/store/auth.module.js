@@ -1,7 +1,7 @@
 //src/store/auth.module.js
-import AuthService from '../services/auth.service';
+import AuthService from "../services/auth.service";
 
-const user = JSON.parse(localStorage.getItem('user'));
+const user = JSON.parse(localStorage.getItem("user"));
 const initialState = user
   ? { status: { loggedIn: true }, user }
   : { status: { loggedIn: false }, user: null };
@@ -11,55 +11,55 @@ export const auth = {
   state: initialState,
   actions: {
     login({ commit }, userData) {
-      return AuthService.login(userData.username,userData.password).then(
-        user => {
-          commit('loginSuccess', user);
+      return AuthService.login(userData.username, userData.password).then(
+        (user) => {
+          commit("loginSuccess", user);
           return Promise.resolve(user);
         },
-        error => {
-          commit('loginFailure');
+        (error) => {
+          commit("loginFailure");
           return Promise.reject(error);
         }
       );
     },
     logout({ commit }, username) {
       AuthService.logout(username);
-      commit('logout');
+      commit("logout");
     },
     register({ commit }, user) {
       return AuthService.register(user).then(
-        response => {
-          commit('registerSuccess');
+        (response) => {
+          commit("registerSuccess");
           return Promise.resolve(response.data);
         },
-        error => {
-          commit('registerFailure');
+        (error) => {
+          commit("registerFailure");
           return Promise.reject(error);
         }
       );
     },
     checkLogin({ commit }, username) {
-      console.log('check login param username -> ',username)
+      console.log("check login param username -> ", username);
       return AuthService.checkLogin(username).then(
         (response) => {
           // Handle the response data as needed, e.g., update state.
-          if (response.success) {
+          if (response.data) {
             // User is logged in
-            console.log('check login sucess response -> ',response)
-            commit('loginSuccess', response);
+            console.log("check login sucess response -> ", response);
+            commit("loginSuccess", response);
           } else {
             // User is not logged in
-            console.log('check login fail response -> ',response)
-            commit('loginFailure');
+            console.log("check login fail response -> ", response);
+            commit("loginFailure");
           }
           return Promise.resolve(response);
         },
         (error) => {
-          commit('loginFailure');
+          commit("loginFailure");
           return Promise.reject(error);
         }
       );
-    }
+    },
   },
   mutations: {
     loginSuccess(state, user) {
@@ -79,6 +79,6 @@ export const auth = {
     },
     registerFailure(state) {
       state.status.loggedIn = false;
-    }
-  }
+    },
+  },
 };

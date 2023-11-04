@@ -57,13 +57,25 @@ import { useRouter } from "vue-router"; // Import the router
 const store = useStore();
 // Define a function to check the login status
 const checkLoginStatus = async () => {
-  let loggedIn = localStorage.getItem("user");
-  const ParseloggedIn = JSON.parse(loggedIn);
-  if (ParseloggedIn) {
-    const { user } = ParseloggedIn.data;
-    const { username, roles } = user;
-  }
+  // let loggedIn = localStorage.getItem("user");
+  // const ParseloggedIn = JSON.parse(loggedIn);
+  // if (ParseloggedIn) {
+  //   const { user } = ParseloggedIn.data;
+  //   const { username, roles } = user;
+  //   store
+  //     .dispatch("auth/checkLogin", username)
+  //     .then(
+  //       (response) => {
+  //         console.log('response',response)
+  //       },
+  //       (error) => {
+  //         // Handle the error
+  //         console.error(error);
+  //       }
+  //     );
+  // }
 };
+
 // Call the checkLoginStatus function when the component mounts
 onMounted(checkLoginStatus);
 
