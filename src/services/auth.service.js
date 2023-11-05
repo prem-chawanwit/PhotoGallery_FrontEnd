@@ -2,7 +2,7 @@
 //src/services/auth.service.js
 import axios from "axios";
 
-const API_URL = "http://localhost:5063/api/Auth/";
+const API_URL = "http://kanjanasing.thddns.net:3383/api/Auth/";
 
 class AuthService {
   login(username, password) {

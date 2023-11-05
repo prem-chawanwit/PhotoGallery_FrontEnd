@@ -2,7 +2,7 @@
 // Composables
 //import store from '@/store'; // Import your Vuex store
 //import { checkTokenValidity } from '@/services/auth';
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from "vue-router";
 import { useStore } from "vuex";
 
 // import Home from "../components/Home.vue";
@@ -67,91 +67,87 @@ import { useStore } from "vuex";
 //   routes,
 // });
 
-
 const routes = [
   {
-    path: '/',
-    name: 'HomeLayout',
-    component: () => import('@/layouts/default/Default.vue'),
+    path: "/",
+    name: "HomeLayout",
+    component: () => import("@/layouts/default/Default.vue"),
     children: [
       {
-        path: '',
-        name: 'Home',
+        path: "",
+        name: "Home",
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "home" */ '@/views/default/Home.vue'),
+        component: () =>
+          import(/* webpackChunkName: "home" */ "@/views/default/Home.vue"),
         meta: { requiresAuth: true }, // Add this to protect the route
       },
       {
-        path: 'about', // Add a route for the "About" page
-        name: 'About',
-        component: () => import(/* webpackChunkName: "home" */ '@/views/default/About.vue'),
+        path: "about", // Add a route for the "About" page
+        name: "About",
+        component: () =>
+          import(/* webpackChunkName: "home" */ "@/views/default/About.vue"),
         meta: { requiresAuth: true }, // Add this to protect the route
       },
       {
-        path: 'calendar', // Add a route for the "About" page
-        name: 'Calendar',
-        component: () => import(/* webpackChunkName: "home" */ '@/views/default/Calendar.vue'),
+        path: "calendar", // Add a route for the "About" page
+        name: "Calendar",
+        component: () =>
+          import(/* webpackChunkName: "home" */ "@/views/default/Calendar.vue"),
         meta: { requiresAuth: true }, // Add this to protect the route
       },
     ],
   },
   {
-    path: '/login',
-    name: 'LoginLayout',
-    component: () => import('@/layouts/auth/Default.vue'), // Import your login component
+    path: "/login",
+    name: "LoginLayout",
+    component: () => import("@/layouts/auth/Default.vue"), // Import your login component
     children: [
       {
-        path: '',
-        name: 'Login',
-        component: () => import(/* webpackChunkName: "home" */ '@/views/auth/Login.vue'),
+        path: "",
+        name: "Login",
+        component: () =>
+          import(/* webpackChunkName: "home" */ "@/views/auth/Login.vue"),
       },
     ],
-  }
-]
+  },
+];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(),
   routes,
 });
 
 router.beforeEach((to, from, next) => {
-  const publicPages = ['/login', '/register', '/home'];
+  const publicPages = ["/login", "/register", "/home"];
   const authRequired = !publicPages.includes(to.path);
-  const loggedIn = localStorage.getItem('user');
-  const ParseloggedIn = JSON.parse(loggedIn);
+  const loggedIn = localStorage.getItem("user");
+  let ParseloggedIn = null;
+  if (loggedIn != null) {
+    ParseloggedIn = JSON.parse(loggedIn);
+  }
   const store = useStore();
 
   // trying to access a restricted page + not logged in
   // redirect to login page
-  console.log('asdsadsa')
 
   if (authRequired && !loggedIn) {
-    console.log('zzz')
-    next('/login');
+    next("/login");
   } else {
-    console.log(ParseloggedIn)
     //let check again
     if (ParseloggedIn) {
-      console.log('uuuuu')
-
       const { user } = ParseloggedIn.data;
       const { username, roles } = user;
 
-      console.log('asdsadsa')
-      store
-        .dispatch("auth/checkLogin", username)
-        .then(
-          (response) => {
-            console.log('routerCheckLogin',response)
-
-            next();
-          },
-          (error) => {
-            next('/login');
-          }
-        );
+      store.dispatch("auth/checkLogin", username).then(
+        (response) => {
+          next();
+        },
+        (error) => {
+          next("/login");
+        }
+      );
     }
     next();
   }

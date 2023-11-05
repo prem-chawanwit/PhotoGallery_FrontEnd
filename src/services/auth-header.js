@@ -8,7 +8,6 @@ export default function authHeader() {
 
     if (ParseToken) {
       const { data } = ParseToken;
-      console.log(data);
     }
     return { Authorization: "Bearer " + data };
   } else {

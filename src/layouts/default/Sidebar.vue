@@ -9,11 +9,11 @@
     permanent
     @click="rail = false"
   >
-    <v-list-item
-      prepend-avatar="../../assets/img/profile/me.jpg"
-      title="Chawanwit Kanjanasing"
-      nav
-    >
+    <v-list-item prepend-avatar="../../assets/img/profile/me.jpg" nav
+      >
+      <h5>Hello : {{ modelusername }}</h5>
+      <h5>Roles : {{ modelroles }}</h5>
+
       <template v-slot:append>
         <v-btn
           variant="text"
@@ -28,50 +28,56 @@
     <v-list density="compact" nav>
       <v-list-item
         prepend-icon="mdi-home"
-        title="Home"
+        title="App"
         value="home"
         @click="checkAndNavigate('home')"
       ></v-list-item>
-      <v-list-item
-        prepend-icon="mdi-account"
-        title="Who am I ?"
-        value="about"
-        @click="checkAndNavigate('about')"
-      ></v-list-item>
-      <!-- <v-list-item
-        prepend-icon="mdi-calendar"
-        title="Calendar"
-        value="calendar"
-        @click="checkAndNavigate('calendar')"
-      ></v-list-item> -->
     </v-list>
   </v-navigation-drawer>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      drawer: true,
-      rail: true,
-    };
-  },
-  methods: {
-    checkAndNavigate(selectedValue) {
-      // Check the selected value and perform routing action
-      if (selectedValue === "home") {
-        this.$router.push({ name: "Home" });
-      }
-      else if (selectedValue === "about") {
-        this.$router.push({ name: "About" });
-      }
-      else if (selectedValue === "calendar") {
-        this.$router.push({ name: "Calendar" });
-      }
-    },
-  },
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+
+const store = useStore();
+const router = useRouter();
+
+let modelusername = ref("Unknown");
+let modelroles = ref("Unknown");
+
+const drawer = ref(true);
+const rail = ref(true);
+
+const getUsername = () => {
+  let loggedIn = localStorage.getItem("user");
+  if (!loggedIn) {
+    return;
+  }
+  const ParseloggedIn = JSON.parse(loggedIn);
+  if (ParseloggedIn) {
+    const { user } = ParseloggedIn.data;
+    const userObj = user; // Use a different variable name
+    const { username, roles } = userObj; // Assign the username from userObj
+    modelusername.value = username;
+    modelroles.value = roles;
+  }
 };
+
+const checkAndNavigate = (selectedValue: string) => {
+  if (selectedValue === "home") {
+    router.push({ name: "Home" });
+  }
+};
+
+onMounted(() => {
+  getUsername();
+});
 </script>
+
+
+
 
 <style scoped>
 /* Add your sidebar styles here */

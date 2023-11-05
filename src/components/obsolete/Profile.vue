@@ -33,7 +33,6 @@ export default {
     }
   },
   mounted() {
-    console.log(this.currentUser)
     if (!this.currentUser) {
       this.$router.push('/login');
     }

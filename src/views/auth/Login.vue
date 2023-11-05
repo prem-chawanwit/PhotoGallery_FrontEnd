@@ -1,6 +1,5 @@
 <!-- src/views/auth/Login.vue -->
 <template>
-  src/views/auth/Login.vue
   <Login />
 </template>
 

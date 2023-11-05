@@ -22,12 +22,10 @@ const router = useRouter(); // Define the router
 const handleLogout = () => {
   let loggedIn = localStorage.getItem('user');
   const ParseloggedIn = JSON.parse(loggedIn);
-  console.log(ParseloggedIn);
   if (ParseloggedIn) {
 
     const { user } = ParseloggedIn.data;
     const { username, roles } = user;
-    console.log('APP,',username)
     // Dispatch the "auth/logout" action to log the user out
     store.dispatch('auth/logout', username);
     // Redirect to the home page (adjust the route as needed)

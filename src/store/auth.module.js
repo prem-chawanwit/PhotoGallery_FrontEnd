@@ -39,17 +39,14 @@ export const auth = {
       );
     },
     checkLogin({ commit }, username) {
-      console.log("check login param username -> ", username);
       return AuthService.checkLogin(username).then(
         (response) => {
           // Handle the response data as needed, e.g., update state.
           if (response.data) {
             // User is logged in
-            console.log("check login sucess response -> ", response);
             commit("loginSuccess", response);
           } else {
             // User is not logged in
-            console.log("check login fail response -> ", response);
             commit("loginFailure");
           }
           return Promise.resolve(response);
