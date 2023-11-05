@@ -9,11 +9,16 @@
     permanent
     @click="rail = false"
   >
-    <v-list-item prepend-avatar="../../assets/img/profile/me.jpg" nav
-      >
-      <h5>Hello : {{ modelusername }}</h5>
-      <h5>Roles : {{ modelroles }}</h5>
-
+    <v-list-item nav>
+      <v-container class="d-flex align-center">
+        <v-avatar color="red" class="mr-2">
+          <span class="text-h5">{{ modelcutusername }}</span>
+        </v-avatar>
+        <div>
+          <h5 class="mb-1">{{ modelusername }}</h5>
+          <p class="text-caption">{{ modelroles }}</p>
+        </div>
+      </v-container>
       <template v-slot:append>
         <v-btn
           variant="text"
@@ -28,7 +33,7 @@
     <v-list density="compact" nav>
       <v-list-item
         prepend-icon="mdi-home"
-        title="App"
+        title="Gallery App"
         value="home"
         @click="checkAndNavigate('home')"
       ></v-list-item>
@@ -46,6 +51,7 @@ const router = useRouter();
 
 let modelusername = ref("Unknown");
 let modelroles = ref("Unknown");
+let modelcutusername = ref("");
 
 const drawer = ref(true);
 const rail = ref(true);
@@ -62,6 +68,11 @@ const getUsername = () => {
     const { username, roles } = userObj; // Assign the username from userObj
     modelusername.value = username;
     modelroles.value = roles;
+    if (modelusername.value.length > 0) {
+      return (modelcutusername.value = modelusername.value[0]);
+    } else {
+      modelcutusername.value = ""; // Return an empty string for an empty input
+    }
   }
 };
 
@@ -75,9 +86,6 @@ onMounted(() => {
   getUsername();
 });
 </script>
-
-
-
 
 <style scoped>
 /* Add your sidebar styles here */

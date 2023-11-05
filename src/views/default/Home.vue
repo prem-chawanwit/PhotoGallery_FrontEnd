@@ -1,7 +1,8 @@
 <template>
-  <HelloWorld />
+  src/vies/default/home
+  <PhotoGallery />
 </template>
 
 <script lang="ts" setup>
-  import HelloWorld from '@/components/HelloWorld.vue'
+  import PhotoGallery from '@/components/PhotoGallery.vue'
 </script>
