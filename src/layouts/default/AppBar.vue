@@ -21,13 +21,16 @@ const router = useRouter();
 const menuOpen = ref(false);
 
 const user = {
-  initials: 'JD',
-  fullName: 'John Doe',
-  email: 'john.doe@doe.com',
+  initials: "JD",
+  fullName: "John Doe",
+  email: "john.doe@doe.com",
 };
 
 const handleLogout = () => {
   let loggedIn = localStorage.getItem("user");
+  if (!loggedIn) {
+    return;
+  }
   const ParseloggedIn = JSON.parse(loggedIn);
   if (ParseloggedIn) {
     const { user } = ParseloggedIn.data;

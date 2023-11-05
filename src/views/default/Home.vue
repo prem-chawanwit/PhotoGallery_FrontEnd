@@ -1,5 +1,4 @@
 <template>
-  src/vies/default/home
   <PhotoGallery />
 </template>
 
