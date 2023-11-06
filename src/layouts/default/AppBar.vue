@@ -1,8 +1,8 @@
 <template>
   <v-app-bar>
     <v-app-bar-title>
-      <v-icon icon="mdi-source-branch" />
-      ver. 2023/11/05
+      <v-icon icon="mdi mdi-image-multiple" />
+      Gallery App v.1.0.0
     </v-app-bar-title>
     <v-card-actions>
       <v-btn @click="handleLogout">Logout</v-btn>
