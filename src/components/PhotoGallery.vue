@@ -1,4 +1,5 @@
 <template>
+  <v-btn @click="handleRequestGetAll()"> GetAll </v-btn>
   <!-- Dialog -->
   <v-row justify="d-flex justify-end mb-6">
     <v-dialog v-model="dialog" persistent width="1024">
@@ -104,11 +105,11 @@
         @mouseout="isHovered[index] = false"
         @click="handleCardClick(index)"
       >
-        <template v-if="index != -1">
+        <template v-if="this.getImages">
           <div>
             <v-img
-              :src="`https://picsum.photos/500/300?image=${image.id}`"
-              :lazy-src="`https://picsum.photos/10/6?image=${image.id}`"
+              :src="`http://localhost:5063/api/Gallery/GetPhoto?fileName=${images[index].systemfileName}`"
+              :lazy-src="`http://localhost:5063/api/Gallery/GetPhoto?fileName=${images[index].systemfileName}`"
               aspect-ratio="1"
               cover
               class="bg-grey-lighten-2"
@@ -125,8 +126,14 @@
             <v-card-title
               class="pt-4 card-title"
               :class="{ 'card-title-hover': isHovered[index] }"
-              >{{ imagesDesc[index] }}</v-card-title
+              >{{ images[index].fileName }}</v-card-title
             >
+            <span>{{ cardOffset }}</span>
+            <!-- <v-card-title
+              class="pt-4 card-title"
+              :class="{ 'card-title-hover': isHovered[index] }"
+              >{{ cardOffset }}</v-card-title
+            > -->
           </div>
         </template>
       </v-card>
@@ -137,10 +144,19 @@
 <script>
 import PhotoService from "@/services/photo.service";
 import authHeader from "@/services/auth-header"; // Import the authHeader function
-
+import { useStore } from "vuex";
+const protocol = import.meta.env.VITE_SERVER_PROTOCOL;
+const url = import.meta.env.VITE_SERVER_URL;
+const port = import.meta.env.VITE_SERVER_PORT;
 export default {
   data() {
     return {
+      //.s.----stringPhotoStockAPI----
+      API_URL: `${protocol}://${url}:${port}/api/Auth/`,
+      //.e.----stringPhotoStockAPI----
+      //.s.----userCert----
+      username: "Unknown",
+      //.e.----userCert----
       //.s.----fileinput----
       rules: [
         (value) => {
@@ -162,25 +178,35 @@ export default {
       loading: false,
       //.s.----card----
       isHovered: [false, false, false, false, false], // Add one entry for each card
+
+      getImages: false,
       images: [
-        { id: 15 },
-        { id: 20 },
-        { id: 25 },
-        { id: 30 },
-        { id: 35 },
+        { fileId: null, fileName: null, systemfileName: null, fileSize: null },
         // Add more image data as needed
       ],
-      imagesDesc: [
-        "Orangeหฟกหฟกหฟกหฟกฟ",
-        "Orangeหฟกหฟกหฟกหฟกฟ",
-        "Orangeหฟกหฟกหฟกหฟกฟ",
-        "Orangeหฟกหฟกหฟกหฟกฟ",
-        "Orangeหฟกหฟกหฟกหฟกฟ",
-      ],
+      cardOffset: "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
       //.e.----card----
     };
   },
+  mounted() {
+    this.getUserCert();
+  },
   methods: {
+    getUserCert() {
+      const loggedIn = localStorage.getItem("user");
+      let ParseloggedIn = null;
+      if (loggedIn != null) {
+        ParseloggedIn = JSON.parse(loggedIn);
+      }
+      const store = useStore();
+      if (ParseloggedIn) {
+        const { user } = ParseloggedIn.data;
+        const { username, roles } = user;
+        this.username = username;
+      } else {
+        //donothing
+      }
+    },
     required(v) {
       return !!v || "Field is required";
     },
@@ -213,8 +239,9 @@ export default {
     },
     async handleRequestUpload() {
       if (this.selectedFile) {
+        console.log("user->", this.username);
         const formData = new FormData();
-        formData.append("requestUsername", 'prem');
+        formData.append("requestUsername", this.username);
         formData.append("requestFileName", this.selectedFileName);
         formData.append("requestFile", this.selectedFile);
 
@@ -242,6 +269,51 @@ export default {
         }
       } else {
         console.log("No file selected");
+      }
+    },
+    async handleRequestGetAll() {
+      try {
+        // Use the PhotoService to make the API request to get the list of photos
+        const response = await PhotoService.getAllPhotos(this.username);
+        this.images = null;
+        this.getImages = false;
+        // Check if the request was successful
+        if (response.status === 200 && response.data.success) {
+          // Extract the list of photos from the response data
+          const photos = response.data.data; // Access the 'data' property in the response
+
+          // Update the 'images' array with the retrieved photos
+          this.images = photos;
+          //Orangeหฟกหฟกหฟกหฟกฟ
+          // Now, iterate through the 'images' array to adjust file names
+          // this.images.forEach((image, index) => {
+          //   // Check if the index is within bounds and the 'fileName' property is not null
+          //   if (index < photos.length && photos[index].fileName !== null) {
+          //     // Update the 'fileName' property in the 'images' array with the retrieved file name
+          //     image.fileName = photos[index].fileName;
+
+          //     // Check if the length of the file name is less than 19 characters
+          //     while (image.fileName.length < 19) {
+          //       // Append "x" to the end of the file name
+          //       image.fileName += "⠀";
+          //     }
+          //   }
+          // });
+          this.getImages = true;
+          console.log("this.images", this.images);
+        } else {
+          this.images = null;
+          this.getImages = false;
+
+          // Handle the case where the request was not successful or 'success' is false
+          console.error("Failed to get photos:", response.data.message);
+        }
+      } catch (error) {
+        this.images = null;
+        this.getImages = false;
+
+        // Handle any errors that occur during the request
+        console.error("Error while getting photos:", error);
       }
     },
   },

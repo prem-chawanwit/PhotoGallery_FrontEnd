@@ -22,7 +22,17 @@ class PhotoService {
     });
   }
 
-  // Add other methods to interact with your API as needed
+// Method to get all photos for a user
+getAllPhotos(username) {
+  // Use the authHeader function to get the authorization header
+  const headers = {
+    ...authHeader(),
+  };
+
+  return axios.get(API_URL + `GetPhotoIdAll?username=${username}`, {
+    headers: headers, // Pass the headers to the request
+  });
+}
 }
 
 export default new PhotoService();
