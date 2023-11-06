@@ -6,7 +6,7 @@ export default function authHeader() {
   if (user) {
     // If a user is logged in with an access token, return the Authorization header.
     const { data } = user;
-    return { Authorization: "Bearer " + user.data };
+    return { Authorization: "Bearer " + user.data.data };
   } else {
     // If no user is logged in or no access token is available, return an empty object.
     return {};

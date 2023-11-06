@@ -211,10 +211,12 @@ export default {
       this.dialog = false;
       console.log("close dialog");
     },
-    handleRequestUpload() {
+    async handleRequestUpload() {
       if (this.selectedFile) {
         const formData = new FormData();
-        formData.append("file", this.selectedFile);
+        formData.append("requestUsername", 'prem');
+        formData.append("requestFileName", this.selectedFileName);
+        formData.append("requestFile", this.selectedFile);
 
         // Use the authHeader function to get the authorization header
         const headers = {
@@ -222,16 +224,22 @@ export default {
           "Content-Type": "multipart/form-data",
         };
 
-        PhotoService.uploadFile(formData, headers) // Pass the headers to the service method
-          .then((response) => {
-            // Handle the response from the API
-            console.log("File upload response:", response.data);
-            // Reset the selected file, if needed
-            this.selectedFile = null;
-          })
-          .catch((error) => {
-            console.error("File upload error:", error);
-          });
+        try {
+          this.loading = true;
+          // Make the API request using the PhotoService
+          const response = await PhotoService.uploadFile(formData, headers);
+          console.log("File upload response:", response.data);
+          this.loading = false;
+
+          // Reset the selected file
+          this.selectedFile = null;
+
+          // Optionally, you can update your images or gallery with the newly uploaded image data
+          // Update this.images and this.imagesDesc as needed
+        } catch (error) {
+          console.error("File upload error:", error);
+          this.loading = false;
+        }
       } else {
         console.log("No file selected");
       }
