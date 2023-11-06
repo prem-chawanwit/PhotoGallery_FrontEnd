@@ -9,8 +9,8 @@ const API_URL = `${protocol}://${url}:${port}/api/Gallery/`;
 class PhotoService {
   // Method to upload a file
   uploadFile(formData) {
-    console.log('PhotoService -> ',formData)
-    console.log(authHeader())
+    console.log("PhotoService -> ", formData);
+    console.log(authHeader());
     // Use the authHeader function to get the authorization header
     const headers = {
       ...authHeader(), // Merge the authorization header with other headers
@@ -22,17 +22,17 @@ class PhotoService {
     });
   }
 
-// Method to get all photos for a user
-getAllPhotos(username) {
-  // Use the authHeader function to get the authorization header
-  const headers = {
-    ...authHeader(),
-  };
+  // Method to get all photos for a user
+  getAllPhotos(username) {
+    // Use the authHeader function to get the authorization header
+    const headers = {
+      ...authHeader(),
+    };
 
-  return axios.get(API_URL + `GetPhotoIdAll?username=${username}`, {
-    headers: headers, // Pass the headers to the request
-  });
-}
+    return axios.get(API_URL + `GetPhotoIdAll?username=${username}`, {
+      headers: headers, // Pass the headers to the request
+    });
+  }
 }
 
 export default new PhotoService();

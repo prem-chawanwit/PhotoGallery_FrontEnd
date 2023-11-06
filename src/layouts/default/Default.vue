@@ -2,7 +2,6 @@
 
 <template>
   <v-app>
-    src/layouts/default/Default.vue
     <Sidebar />
     <AppBar />
     <MainView />

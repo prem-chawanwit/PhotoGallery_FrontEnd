@@ -1,10 +1,15 @@
 <template>
-  <v-btn @click="handleRequestGetAll()"> GetAll </v-btn>
   <!-- Dialog -->
   <v-row justify="d-flex justify-end mb-6">
     <v-dialog v-model="dialog" persistent width="1024">
       <template v-slot:activator="{ props }">
-        <v-col sm="2" md="2" lg="2" class="d-flex justify-end text-center mb-0">
+        <v-col
+          sm="6"
+          md="4"
+          lg="2"
+          xl="1"
+          class="d-flex justify-end text-center mb-0"
+        >
           <v-btn block rounded="lg" size="large" color="primary" v-bind="props"
             >เพิ่มผลไม้</v-btn
           >
@@ -75,7 +80,7 @@
   </v-row>
   <!-- Gallery -->
   <v-row class="d-flex justify-end mb-6">
-    <v-col sm="4" md="4" lg="4" class="d-flex justify-end text-center mb-6">
+    <v-col sm="6" md="4" lg="2" class="d-flex justify-end text-center mb-6">
       <v-text-field
         :loading="loading"
         density="compact"
@@ -84,64 +89,93 @@
         prepend-inner-icon="mdi-magnify"
         single-line
         hide-details
+        v-model="search"
         @click:prepend-inner="onSearch"
       ></v-text-field>
     </v-col>
   </v-row>
-  <v-row>
-    <v-col
-      v-for="(image, index) in images"
-      :key="index"
-      class="d-flex child-flex justify-center"
-      cols="12"
-      sm="6"
-      md="4"
-      lg="4"
-    >
-      <v-card
-        max-height="1500px"
-        max-width="1500px"
-        @mouseover="isHovered[index] = true"
-        @mouseout="isHovered[index] = false"
-        @click="handleCardClick(index)"
+  <template v-if="this.getImages">
+    <v-row>
+      <v-col
+        v-for="(image, index) in images"
+        :key="index"
+        class="d-flex child-flex justify-center"
+        cols="12"
+        sm="6"
+        md="4"
+        lg="2"
       >
-        <template v-if="this.getImages">
-          <div>
-            <v-img
-              :src="`http://localhost:5063/api/Gallery/GetPhoto?fileName=${images[index].systemfileName}`"
-              :lazy-src="`http://localhost:5063/api/Gallery/GetPhoto?fileName=${images[index].systemfileName}`"
-              aspect-ratio="1"
-              cover
-              class="bg-grey-lighten-2"
-            >
-              <template v-slot:placeholder>
-                <v-row class="fill-height ma-0" align="center" justify="center">
-                  <v-progress-circular
-                    indeterminate
-                    color="grey-lighten-5"
-                  ></v-progress-circular>
-                </v-row>
+        <v-card
+          max-height="1800px"
+          max-width="1800px"
+          @mouseover="isHovered[index] = true"
+          @mouseout="isHovered[index] = false"
+          @click="handleCardClick(index)"
+        >
+          <template v-if="this.getImages">
+            <div>
+              <v-img
+                :src="getAuthorizedImageURL(index)"
+                :lazy-src="getAuthorizedImageURL(index)"
+                aspect-ratio="1"
+                cover
+                class="bg-grey-lighten-2"
+              >
+                <template v-slot:placeholder>
+                  <v-row
+                    class="fill-height ma-0"
+                    align="center"
+                    justify="center"
+                  >
+                    <v-progress-circular
+                      indeterminate
+                      color="grey-lighten-5"
+                    ></v-progress-circular>
+                  </v-row>
+                </template>
+              </v-img>
+              <v-card-title
+                class="pt-4 card-title"
+                :class="{ 'card-title-hover': isHovered[index] }"
+                >{{ images[index].fileName }}</v-card-title
+              >
+              <template v-if="1">
+                <v-card-subtitle class="pt-4">
+                  Id : {{ images[index].fileId }}</v-card-subtitle
+                >
+                <v-card-subtitle class="pt-4">
+                  Size : {{ images[index].fileSize }} mb.</v-card-subtitle
+                >
               </template>
-            </v-img>
-            <v-card-title
-              class="pt-4 card-title"
-              :class="{ 'card-title-hover': isHovered[index] }"
-              >{{ images[index].fileName }}</v-card-title
-            >
-            <span>{{ cardOffset }}</span>
-            <!-- <v-card-title
-              class="pt-4 card-title"
-              :class="{ 'card-title-hover': isHovered[index] }"
-              >{{ cardOffset }}</v-card-title
-            > -->
-          </div>
-        </template>
-      </v-card>
-    </v-col>
-  </v-row>
+              <span>{{ cardOffset }}</span>
+
+              <v-card-title
+                class="pt-4 card-title"
+                :class="{ 'card-title-hover': isHovered[index] }"
+              >
+                <v-btn prepend-icon="mdi-lead-pencil" :disabled="false" size="small">
+                  <template v-slot:prepend>
+                    <v-icon color="warning"></v-icon>
+                  </template>
+                  Edit
+                </v-btn>
+                <v-btn prepend-icon="mdi-delete" :="false" size="small">
+                  <template v-slot:prepend>
+                    <v-icon color="red-darken-3"></v-icon>
+                  </template>
+                  Delete
+                </v-btn>
+              </v-card-title>
+            </div>
+          </template>
+        </v-card>
+      </v-col>
+    </v-row>
+  </template>
 </template>
 
 <script>
+import axios from "axios";
 import PhotoService from "@/services/photo.service";
 import authHeader from "@/services/auth-header"; // Import the authHeader function
 import { useStore } from "vuex";
@@ -151,8 +185,11 @@ const port = import.meta.env.VITE_SERVER_PORT;
 export default {
   data() {
     return {
+      icons: ["mdi-facebook", "mdi-twitter", "mdi-linkedin", "mdi-instagram"],
+
+      search: "",
       //.s.----stringPhotoStockAPI----
-      API_URL: `${protocol}://${url}:${port}/api/Auth/`,
+      API_URL: `${protocol}://${url}:${port}/api/Gallery`,
       //.e.----stringPhotoStockAPI----
       //.s.----userCert----
       username: "Unknown",
@@ -190,6 +227,7 @@ export default {
   },
   mounted() {
     this.getUserCert();
+    this.handleRequestGetAll();
   },
   methods: {
     getUserCert() {
@@ -211,12 +249,13 @@ export default {
       return !!v || "Field is required";
     },
     onSearch() {
-      this.loading = true;
-
-      setTimeout(() => {
-        this.loading = false;
-        this.loaded = true;
-      }, 2000);
+      if (this.search === null || this.search === "") {
+        console.log("Getall");
+        this.handleRequestGetAll();
+      } else {
+        console.log("Getfilter");
+        //get filter
+      }
     },
     handleCardClick(photoIndex) {},
     handlePhotoUpload(event) {
@@ -273,6 +312,7 @@ export default {
     },
     async handleRequestGetAll() {
       try {
+        this.loading = true;
         // Use the PhotoService to make the API request to get the list of photos
         const response = await PhotoService.getAllPhotos(this.username);
         this.images = null;
@@ -284,26 +324,13 @@ export default {
 
           // Update the 'images' array with the retrieved photos
           this.images = photos;
-          //Orangeหฟกหฟกหฟกหฟกฟ
-          // Now, iterate through the 'images' array to adjust file names
-          // this.images.forEach((image, index) => {
-          //   // Check if the index is within bounds and the 'fileName' property is not null
-          //   if (index < photos.length && photos[index].fileName !== null) {
-          //     // Update the 'fileName' property in the 'images' array with the retrieved file name
-          //     image.fileName = photos[index].fileName;
-
-          //     // Check if the length of the file name is less than 19 characters
-          //     while (image.fileName.length < 19) {
-          //       // Append "x" to the end of the file name
-          //       image.fileName += "⠀";
-          //     }
-          //   }
-          // });
           this.getImages = true;
+          this.loading = false;
           console.log("this.images", this.images);
         } else {
           this.images = null;
           this.getImages = false;
+          this.loading = false;
 
           // Handle the case where the request was not successful or 'success' is false
           console.error("Failed to get photos:", response.data.message);
@@ -311,10 +338,25 @@ export default {
       } catch (error) {
         this.images = null;
         this.getImages = false;
+        this.loading = false;
 
         // Handle any errors that occur during the request
         console.error("Error while getting photos:", error);
       }
+    },
+    getAuthorizedImageURL(index) {
+      const headers = authHeader();
+      console.log("headers", headers.Authorization);
+
+      // Assuming this.images is an array of image objects
+      const fileName = this.images[index].systemfileName;
+
+      const imageUrl = `${this.API_URL}/GetPhoto?fileName=${fileName}&username=${this.username}`;
+
+      // Construct the image URL with authorization headers in the query parameters
+      const authorizedImageUrl = imageUrl;
+
+      return authorizedImageUrl;
     },
   },
 };
