@@ -1,5 +1,5 @@
 <template>
-  <!-- Gallery -->
+  <!-- Dialog -->
   <v-row justify="d-flex justify-end mb-6">
     <v-dialog v-model="dialog" persistent width="1024">
       <template v-slot:activator="{ props }">
@@ -15,37 +15,49 @@
         </v-card-title>
         <v-card-text>
           <v-container>
-            <v-row>
-              <v-col cols="12" sm="12" md="12">
-                <v-text-field label="Name" required></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" sm="12" md="12">
-                <v-file-input
-                  :rules="rules"
-                  accept="image/png, image/jpeg, image/bmp"
-                  prepend-icon="mdi-camera"
-                  label="Photo"
-                ></v-file-input>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="3" sm="1" md="1">
-                <v-btn
-                  color="success"
-                  variant="elevated"
-                  @click="dialog = false"
-                >
-                  Save
-                </v-btn>
-              </v-col>
-              <v-col cols="3" sm="1" md="1">
-                <v-btn color="" variant="elevated" @click="dialog = false">
-                  Close
-                </v-btn>
-              </v-col>
-            </v-row>
+            <v-form v-model="form">
+              <v-row>
+                <v-col cols="12" sm="12" md="12">
+                  <v-text-field
+                    label="Name"
+                    :rules="[required]"
+                    v-model="selectedFileName"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12" sm="12" md="12">
+                  <v-file-input
+                    :rules="[required]"
+                    accept="image/png, image/jpeg, image/bmp"
+                    prepend-icon="mdi-camera"
+                    label="Photo"
+                    @change="handlePhotoUpload"
+                  ></v-file-input>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="3" sm="1" md="1">
+                  <v-btn
+                    :loading="loading"
+                    color="success"
+                    variant="elevated"
+                    @click="handleRequestUpload()"
+                  >
+                    Save
+                  </v-btn>
+                </v-col>
+                <v-col cols="3" sm="1" md="1">
+                  <v-btn
+                    color=""
+                    variant="elevated"
+                    @click="handlePhotoUploadClose()"
+                  >
+                    Close
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-form>
           </v-container>
         </v-card-text>
         <v-card-actions>
@@ -60,6 +72,7 @@
       </v-card>
     </v-dialog>
   </v-row>
+  <!-- Gallery -->
   <v-row class="d-flex justify-end mb-6">
     <v-col sm="4" md="4" lg="4" class="d-flex justify-end text-center mb-6">
       <v-text-field
@@ -122,6 +135,9 @@
 </template>
 
 <script>
+import PhotoService from "@/services/photo.service";
+import authHeader from "@/services/auth-header"; // Import the authHeader function
+
 export default {
   data() {
     return {
@@ -136,6 +152,8 @@ export default {
           );
         },
       ],
+      selectedFileName: null,
+      selectedFile: null,
       //.e.----fileinput----
       //.s.----dialog----
       dialog: false,
@@ -163,6 +181,9 @@ export default {
     };
   },
   methods: {
+    required(v) {
+      return !!v || "Field is required";
+    },
     onSearch() {
       this.loading = true;
 
@@ -171,29 +192,48 @@ export default {
         this.loaded = true;
       }, 2000);
     },
-    handleCardClick(reportIndex) {
-      if (reportIndex == 0) {
-        this.$router.push({
-          name: "productionPlanReport",
-        });
-      } else if (reportIndex == 1) {
-        this.$router.push({
-          name: "lateordersReport",
-        });
-      } else if (reportIndex == 2) {
-        this.$router.push({
-          name: "materialUsageReport",
-        });
-      } else if (reportIndex == 3) {
-        this.$router.push({
-          name: "bwhInputReport",
-        });
-      } else if (reportIndex == 4) {
-        this.$router.push({
-          name: "waferInputReport",
-        });
+    handleCardClick(photoIndex) {},
+    handlePhotoUpload(event) {
+      console.log(event);
+      const files = event.target.files;
+      if (files.length > 0) {
+        console.log(files[0]);
+        const file = files[0];
+        this.selectedFile = file;
+        console.log("Selected file:", file.name);
+        console.log("File size:", file.size);
       } else {
-        // do nothing
+        console.log("No file selected");
+      }
+    },
+    handlePhotoUploadClose() {
+      this.selectedFile = null;
+      this.dialog = false;
+      console.log("close dialog");
+    },
+    handleRequestUpload() {
+      if (this.selectedFile) {
+        const formData = new FormData();
+        formData.append("file", this.selectedFile);
+
+        // Use the authHeader function to get the authorization header
+        const headers = {
+          ...authHeader(),
+          "Content-Type": "multipart/form-data",
+        };
+
+        PhotoService.uploadFile(formData, headers) // Pass the headers to the service method
+          .then((response) => {
+            // Handle the response from the API
+            console.log("File upload response:", response.data);
+            // Reset the selected file, if needed
+            this.selectedFile = null;
+          })
+          .catch((error) => {
+            console.error("File upload error:", error);
+          });
+      } else {
+        console.log("No file selected");
       }
     },
   },

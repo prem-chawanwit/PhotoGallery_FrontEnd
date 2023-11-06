@@ -2,7 +2,7 @@
 <template>
   <v-app-bar>
     <v-app-bar-title>
-      <v-icon icon="mdi-source-branch" />
+      <v-icon icon="mdi mdi-image-multiple" />
       Welcome to Photo Gallery
     </v-app-bar-title>
   </v-app-bar>
