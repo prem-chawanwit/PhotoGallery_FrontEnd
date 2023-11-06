@@ -2,7 +2,33 @@
   <v-main>
     <v-container>
       <v-card class="mx-auto px-6 py-8" max-width="344">
-        <v-form v-model="form" @submit.prevent="handleLogin(this.username,this.password)">
+        <template v-if="showSuccess">
+          <v-alert
+            type="success"
+            title="Successfully login!"
+            text=""
+          ></v-alert>
+        </template>
+        <template v-else-if="showError">
+          <v-alert
+            type="error"
+            title="Wrong Username or Pasasword"
+            text=""
+          ></v-alert>
+        </template>
+        <template v-else >
+          <v-alert
+            type="info"
+            title="Sign in"
+            text="You can sign in with guest"
+          ></v-alert>
+        </template>
+
+        <br /><br />
+        <v-form
+          v-model="form"
+          @submit.prevent="handleLogin(this.username, this.password)"
+        >
           <v-text-field
             v-model="username"
             :readonly="loading"
@@ -39,28 +65,6 @@
       </v-card>
     </v-container>
   </v-main>
-  <!-- <div>
-    <v-main>
-      <v-container>
-        <v-card>
-          <v-card-title>Login</v-card-title>
-          <v-card-text>
-            <v-text-field v-model="username" label="Username"></v-text-field>
-            <v-text-field
-              v-model="password"
-              label="Password"
-              type="password"
-            ></v-text-field>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn @click="handleLogin(this.username, this.password)"
-              >Login</v-btn
-            >
-          </v-card-actions>
-        </v-card>
-      </v-container>
-    </v-main>
-  </div> -->
 </template>
 
 <script>
@@ -76,10 +80,13 @@ export default {
   },
   data() {
     return {
+      //aleart
+      showSuccess: false,
+      showError: false,
       //form
       form: false,
-      username: "",
-      password: "",
+      username: "guest",
+      password: "123456789",
       //
       loading: false,
       message: "",
@@ -114,7 +121,20 @@ export default {
       this.loading = true;
 
       this.$store.dispatch("auth/login", userData).then(
-        () => {
+        (response) => {
+          console.log("response", response);
+          if (response.Success || response) {
+            console.log("ok");
+            this.showSuccess = true;
+            this.showError = false;
+          } else {
+            console.log("false");
+
+            this.showSuccess = false;
+            this.showError = true;
+          }
+          this.loading = false;
+
           this.$router.push("/");
         },
         (error) => {

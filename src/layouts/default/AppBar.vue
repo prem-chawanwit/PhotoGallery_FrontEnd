@@ -1,7 +1,7 @@
 <template>
   <v-app-bar>
     <v-app-bar-title>
-      <v-icon icon="mdi mdi-image-multiple" />
+      <v-icon icon="mdi mdi-image-multiple"  color="info"/>
       Gallery App v.1.0.0
     </v-app-bar-title>
     <v-card-actions>
@@ -25,22 +25,36 @@ const user = {
   fullName: "John Doe",
   email: "john.doe@doe.com",
 };
-
-const handleLogout = () => {
-  let loggedIn = localStorage.getItem("user");
-  if (!loggedIn) {
-    return;
-  }
-  const ParseloggedIn = JSON.parse(loggedIn);
-  if (ParseloggedIn) {
-    const { user } = ParseloggedIn.data;
-    const { username, roles } = user;
+// Add a ref to control re-mounting the component
+const handleLogout = async () => {
+  try {
     // Dispatch the "auth/logout" action to log the user out
-    store.dispatch("auth/logout", username);
-    // Redirect to the home page (adjust the route as needed)
-    router.push("/login");
+    let loggedIn = localStorage.getItem("user");
+    if (!loggedIn) {
+      return;
+    }
+
+    const ParseloggedIn = JSON.parse(loggedIn);
+
+    if (ParseloggedIn) {
+      const { user } = ParseloggedIn.data;
+      const { username, roles } = user;
+
+      await store.dispatch("auth/logout", username);
+
+      // Redirect to the login page after successful logout
+      router.push("/login"); // Replace with your desired route
+      window.location.reload();
+
+
+    } else {
+      console.log("User data not found in localStorage.");
+    }
+  } catch (error) {
+    console.error("Error during logout:", error);
   }
 };
+
 </script>
 
 <style scoped>

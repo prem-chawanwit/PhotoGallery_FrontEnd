@@ -1,4 +1,5 @@
 <template>
+  <br><br>
   <PhotoGallery />
 </template>
 

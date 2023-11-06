@@ -21,9 +21,13 @@ class AuthService {
         if (success) {
           localStorage.setItem("user", JSON.stringify(response));
         } else {
-          return false; // Authentication failed
+          console.log("fail");
+          return response;
         }
         return response;
+      })
+      .catch((error) => {
+        return false;
       });
   }
   logout(username) {
@@ -34,7 +38,9 @@ class AuthService {
         },
       })
       .then(() => {
+        console.log("remove");
         localStorage.removeItem("user");
+        console.log(localStorage.getItem("user"));
       })
       .catch((error) => {
         console.error("Logout failed:", error);
@@ -55,10 +61,10 @@ class AuthService {
       })
       .then((response) => {
         if (!response.data.data) {
-          console.log('expired')
+          console.log("expired");
           localStorage.removeItem("user");
         } else {
-          console.log('valid token')
+          console.log("valid token");
         }
         return response.data;
       });

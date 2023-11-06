@@ -10,7 +10,6 @@ class PhotoService {
   // Method to upload a file
   uploadFile(formData) {
     console.log("PhotoService -> ", formData);
-    console.log(authHeader());
     // Use the authHeader function to get the authorization header
     const headers = {
       ...authHeader(), // Merge the authorization header with other headers
@@ -21,7 +20,6 @@ class PhotoService {
       headers: headers, // Pass the headers to the request
     });
   }
-
   // Method to get all photos for a user
   getAllPhotos(username) {
     // Use the authHeader function to get the authorization header
@@ -30,6 +28,40 @@ class PhotoService {
     };
 
     return axios.get(API_URL + `GetPhotoIdAll?username=${username}`, {
+      headers: headers, // Pass the headers to the request
+    });
+  }
+  getFilterPhotos(formData) {
+    console.log("getFilterPhotos -> ", formData);
+    // Use the authHeader function to get the authorization header
+    const headers = {
+      ...authHeader(),
+    };
+
+    return axios.post(API_URL + "GetPhotoIdFilter", formData, {
+      headers: headers, // Pass the headers to the request
+    });
+
+  }
+  editPhoto(formData) {
+    console.log("editPhoto -> ", formData);
+    // Use the authHeader function to get the authorization header
+    const headers = {
+      ...authHeader(), // Merge the authorization header with other headers
+    };
+
+    return axios.post(API_URL + "EditPhotoName", formData, {
+      headers: headers, // Pass the headers to the request
+    });
+  }
+  deletePhoto(formData) {
+    console.log("deletePhoto -> ", formData);
+    // Use the authHeader function to get the authorization header
+    const headers = {
+      ...authHeader(), // Merge the authorization header with other headers
+    };
+
+    return axios.post(API_URL + "DeletePhotoName", formData, {
       headers: headers, // Pass the headers to the request
     });
   }

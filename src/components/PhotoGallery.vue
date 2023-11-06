@@ -10,9 +10,16 @@
           xl="1"
           class="d-flex justify-end text-center mb-0"
         >
-          <v-btn block rounded="lg" size="large" color="primary" v-bind="props"
-            >เพิ่มผลไม้</v-btn
-          >
+          <template v-if="this.userAccessLevelid < 3">
+            <v-btn
+              block
+              rounded="lg"
+              size="large"
+              color="primary"
+              v-bind="props"
+              >เพิ่มผลไม้</v-btn
+            >
+          </template>
         </v-col>
       </template>
       <v-card>
@@ -75,6 +82,91 @@
             Save
           </v-btn> -->
         </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-row>
+  <!-- DialogEdit -->
+  <v-row justify="d-flex justify-end mb-0">
+    <v-dialog v-model="dialogEdit" persistent width="1024">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Edit </span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-form v-model="form">
+              <v-row>
+                <v-col cols="12" sm="12" md="12">
+                  <v-text-field
+                    label=""
+                    :rules="[required]"
+                    v-model="this.modelToEdit.name"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="3" sm="1" md="1">
+                  <v-btn
+                    :loading="loading"
+                    color="success"
+                    variant="elevated"
+                    @click="handleEdit()"
+                  >
+                    Save
+                  </v-btn>
+                </v-col>
+                <v-col cols="3" sm="1" md="1">
+                  <v-btn
+                    color=""
+                    variant="elevated"
+                    @click="handleDialogEditClose()"
+                  >
+                    Close
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-form>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </v-row>
+  <!-- DialogDelete -->
+  <v-row justify="d-flex justify-end mb-0">
+    <v-dialog v-model="dialogDelete" persistent width="1024">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5"
+            >Are you sure to delete {{ this.modelToDelete.name }} ?
+          </span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-form v-model="form">
+              <v-row>
+                <v-col cols="3" sm="1" md="1">
+                  <v-btn
+                    :loading="loading"
+                    color="red-darken-3"
+                    variant="elevated"
+                    @click="handleDelete()"
+                  >
+                    Delete
+                  </v-btn>
+                </v-col>
+                <v-col cols="3" sm="1" md="1">
+                  <v-btn
+                    color=""
+                    variant="elevated"
+                    @click="handleDialogDeleteClose()"
+                  >
+                    Close
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-form>
+          </v-container>
+        </v-card-text>
       </v-card>
     </v-dialog>
   </v-row>
@@ -149,23 +241,46 @@
               </template>
               <span>{{ cardOffset }}</span>
 
-              <v-card-title
-                class="pt-4 card-title"
-                :class="{ 'card-title-hover': isHovered[index] }"
-              >
-                <v-btn prepend-icon="mdi-lead-pencil" :disabled="false" size="small">
-                  <template v-slot:prepend>
-                    <v-icon color="warning"></v-icon>
-                  </template>
-                  Edit
-                </v-btn>
-                <v-btn prepend-icon="mdi-delete" :="false" size="small">
-                  <template v-slot:prepend>
-                    <v-icon color="red-darken-3"></v-icon>
-                  </template>
-                  Delete
-                </v-btn>
-              </v-card-title>
+              <template v-if="this.userAccessLevelid < 4">
+                <div>
+                  <v-card-title
+                    class="pt-4 card-title"
+                    :class="{ 'card-title-hover': isHovered[index] }"
+                  >
+                    <v-btn
+                      prepend-icon="mdi-lead-pencil"
+                      :disabled="false"
+                      size="small"
+                      @click="
+                        openEdit(images[index].fileId, images[index].fileName)
+                      "
+                    >
+                      <template v-slot:prepend>
+                        <v-icon color="warning"></v-icon>
+                      </template>
+                      Edit
+                    </v-btn>
+                    <template v-if="this.userAccessLevelid < 3">
+                      <v-btn
+                        prepend-icon="mdi-delete"
+                        :="false"
+                        size="small"
+                        @click="
+                          openDelete(
+                            images[index].fileId,
+                            images[index].fileName
+                          )
+                        "
+                      >
+                        <template v-slot:prepend>
+                          <v-icon color="red-darken-3"></v-icon>
+                        </template>
+                        Delete
+                      </v-btn>
+                    </template>
+                  </v-card-title>
+                </div>
+              </template>
             </div>
           </template>
         </v-card>
@@ -193,6 +308,7 @@ export default {
       //.e.----stringPhotoStockAPI----
       //.s.----userCert----
       username: "Unknown",
+      roles: "Unknown",
       //.e.----userCert----
       //.s.----fileinput----
       rules: [
@@ -210,6 +326,12 @@ export default {
       //.e.----fileinput----
       //.s.----dialog----
       dialog: false,
+      dialogEdit: false,
+      dialogDelete: false,
+      diaLogName: null,
+      modelToEdit: { id: null, name: null },
+      modelToDelete: { id: null, name: null, systemfileName: null },
+
       //.e.----dialog----
       loaded: false,
       loading: false,
@@ -227,6 +349,10 @@ export default {
   },
   mounted() {
     this.getUserCert();
+    //window.location.reload();
+    //window.location.reload();
+    //router.push("/login"); // Replace with your desired route
+
     this.handleRequestGetAll();
   },
   methods: {
@@ -239,8 +365,10 @@ export default {
       const store = useStore();
       if (ParseloggedIn) {
         const { user } = ParseloggedIn.data;
-        const { username, roles } = user;
+        const { username, userAccessLevelid, roles } = user;
         this.username = username;
+        this.userAccessLevelid = userAccessLevelid;
+        this.roles = roles;
       } else {
         //donothing
       }
@@ -254,15 +382,13 @@ export default {
         this.handleRequestGetAll();
       } else {
         console.log("Getfilter");
-        //get filter
+        this.handleRequestGetFilter();
       }
     },
     handleCardClick(photoIndex) {},
     handlePhotoUpload(event) {
-      console.log(event);
       const files = event.target.files;
       if (files.length > 0) {
-        console.log(files[0]);
         const file = files[0];
         this.selectedFile = file;
         console.log("Selected file:", file.name);
@@ -272,13 +398,13 @@ export default {
       }
     },
     handlePhotoUploadClose() {
+      this.selectedFileName = "";
       this.selectedFile = null;
       this.dialog = false;
       console.log("close dialog");
     },
     async handleRequestUpload() {
       if (this.selectedFile) {
-        console.log("user->", this.username);
         const formData = new FormData();
         formData.append("requestUsername", this.username);
         formData.append("requestFileName", this.selectedFileName);
@@ -296,13 +422,19 @@ export default {
           const response = await PhotoService.uploadFile(formData, headers);
           console.log("File upload response:", response.data);
           this.loading = false;
-
+          if (response.status === 401) {
+            // Navigate to the login page
+            router.push("/login");
+          }
           // Reset the selected file
           this.selectedFile = null;
+          this.handlePhotoUploadClose();
+          this.handleRequestGetAll();
 
           // Optionally, you can update your images or gallery with the newly uploaded image data
           // Update this.images and this.imagesDesc as needed
         } catch (error) {
+          window.location.reload();
           console.error("File upload error:", error);
           this.loading = false;
         }
@@ -317,6 +449,10 @@ export default {
         const response = await PhotoService.getAllPhotos(this.username);
         this.images = null;
         this.getImages = false;
+        if (response.status === 401) {
+          // Navigate to the login page
+          router.push("/login");
+        }
         // Check if the request was successful
         if (response.status === 200 && response.data.success) {
           // Extract the list of photos from the response data
@@ -326,16 +462,15 @@ export default {
           this.images = photos;
           this.getImages = true;
           this.loading = false;
-          console.log("this.images", this.images);
         } else {
           this.images = null;
           this.getImages = false;
           this.loading = false;
 
           // Handle the case where the request was not successful or 'success' is false
-          console.error("Failed to get photos:", response.data.message);
         }
       } catch (error) {
+        window.location.reload();
         this.images = null;
         this.getImages = false;
         this.loading = false;
@@ -344,9 +479,122 @@ export default {
         console.error("Error while getting photos:", error);
       }
     },
+    async handleRequestGetFilter() {
+      try {
+        this.loading = true;
+        const formData = new FormData();
+        formData.append("username", this.username);
+        formData.append("requestFileName", this.search);
+        console.log("formData", formData);
+        const headers = {
+        ...authHeader(),
+      };
+        // Use the PhotoService to make the API request to get the list of photos
+        const response = await PhotoService.getFilterPhotos(formData,headers);
+        this.images = null;
+        this.getImages = false;
+        if (response.status === 401) {
+          // Navigate to the login page
+          router.push("/login");
+        }
+        // Check if the request was successful
+        if (response.status === 200 && response.data.success) {
+          // Extract the list of photos from the response data
+          const photos = response.data.data; // Access the 'data' property in the response
+
+          // Update the 'images' array with the retrieved photos
+          this.images = photos;
+          this.getImages = true;
+          this.loading = false;
+        } else {
+          this.images = null;
+          this.getImages = false;
+          this.loading = false;
+
+          // Handle the case where the request was not successful or 'success' is false
+        }
+      } catch (error) {
+        window.location.reload();
+        this.images = null;
+        this.getImages = false;
+        this.loading = false;
+
+        // Handle any errors that occur during the request
+        console.error("Error while getting photos:", error);
+      }
+    },
+    async handleEdit() {
+      const indexToEdit = this.modelToEdit.id;
+      if (indexToEdit === "" || indexToEdit === null) {
+        return;
+      }
+      console.log(indexToEdit);
+      const formData = new FormData();
+      formData.append("username", this.username);
+      formData.append("fileId", this.modelToEdit.id);
+      formData.append("fileName", this.modelToEdit.name);
+
+      // // Use the authHeader function to get the authorization header
+      const headers = {
+        ...authHeader(),
+      };
+
+      try {
+        this.loading = true;
+        // Make the API request using the PhotoService
+        //const response = await PhotoService.editPhoto(formData, headers);
+        const response = await PhotoService.editPhoto(formData);
+
+        if (response.status === 401) {
+          // Navigate to the login page
+          router.push("/login");
+        }
+        console.log("File edit response:", response.data);
+        this.loading = false;
+        this.handleDialogEditClose();
+        this.handleRequestGetAll();
+        // Optionally, you can update your images or gallery with the newly edited image data
+        // Update this.images and this.imagesDesc as needed
+      } catch (error) {
+        console.error("File edit error:", error);
+        this.loading = false;
+      }
+    },
+    async handleDelete() {
+      const indexToEdit = this.modelToDelete.id;
+      if (indexToEdit === "" || indexToEdit === null) {
+        return;
+      }
+      const formData = new FormData();
+      formData.append("username", this.username);
+      formData.append("fileId", this.modelToDelete.id);
+
+      // // Use the authHeader function to get the authorization header
+      const headers = {
+        ...authHeader(),
+      };
+
+      try {
+        this.loading = true;
+        // Make the API request using the PhotoService
+        const response = await PhotoService.deletePhoto(formData, headers);
+        if (response.status === 401) {
+          // Navigate to the login page
+          router.push("/login");
+        }
+        console.log("File delete response:", response.data);
+        this.loading = false;
+        this.handleDialogDeleteClose();
+        this.handleRequestGetAll();
+        // Optionally, you can update your images or gallery with the newly edited image data
+        // Update this.images and this.imagesDesc as needed
+      } catch (error) {
+        console.error("File edit error:", error);
+        this.loading = false;
+      }
+    },
     getAuthorizedImageURL(index) {
       const headers = authHeader();
-      console.log("headers", headers.Authorization);
 
       // Assuming this.images is an array of image objects
       const fileName = this.images[index].systemfileName;
@@ -357,6 +605,29 @@ export default {
       const authorizedImageUrl = imageUrl;
 
       return authorizedImageUrl;
+    },
+    openEdit(id, photoName) {
+      this.dialogEdit = true;
+      this.modelToEdit.id = id;
+      this.modelToEdit.name = photoName;
+    },
+    openDelete(id, photoName) {
+      this.dialogDelete = true;
+      this.modelToDelete.id = id;
+      this.modelToDelete.name = photoName;
+      //console.log(this.modelToDelete)
+    },
+    handleDialogDeleteClose() {
+      this.dialogDelete = false;
+      this.modelToDelete.name = "";
+      this.modelToDelete.id = null;
+      console.log("close dialog");
+    },
+    handleDialogEditClose() {
+      this.dialogEdit = false;
+      this.modelToEdit.name = "";
+      this.modelToEdit.id = null;
+      console.log("close dialog");
     },
   },
 };
