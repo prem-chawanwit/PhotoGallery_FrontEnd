@@ -10,78 +10,85 @@
           xl="1"
           class="d-flex justify-end text-center mb-0"
         >
-          <template v-if="this.userAccessLevelid < 3">
-            <v-btn
-              block
-              rounded="lg"
-              size="large"
-              color="primary"
-              v-bind="props"
-              >เพิ่มผลไม้</v-btn
-            >
-          </template>
+          <v-btn block rounded="lg" size="large" color="primary" v-bind="props"
+            >Add Photo</v-btn
+          >
         </v-col>
       </template>
       <v-card>
-        <v-card-title>
-          <span class="text-h5">Create</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-form v-model="form">
-              <v-row>
-                <v-col cols="12" sm="12" md="12">
-                  <v-text-field
-                    label="Name"
-                    :rules="[required]"
-                    v-model="selectedFileName"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="12" sm="12" md="12">
-                  <v-file-input
-                    :rules="[required]"
-                    accept="image/png, image/jpeg, image/bmp"
-                    prepend-icon="mdi-camera"
-                    label="Photo"
-                    @change="handlePhotoUpload"
-                  ></v-file-input>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="3" sm="1" md="1">
-                  <v-btn
-                    :loading="loading"
-                    color="success"
-                    variant="elevated"
-                    @click="handleRequestUpload()"
-                  >
-                    Save
-                  </v-btn>
-                </v-col>
-                <v-col cols="3" sm="1" md="1">
-                  <v-btn
-                    color=""
-                    variant="elevated"
-                    @click="handlePhotoUploadClose()"
-                  >
-                    Close
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <!-- <v-spacer></v-spacer>
-          <v-btn color="" variant="elevated" @click="dialog = false">
-            Close
-          </v-btn>
-          <v-btn color="success" variant="elevated" @click="dialog = false">
-            Save
-          </v-btn> -->
-        </v-card-actions>
+        <template v-if="this.userAccessLevelid < 3">
+          <v-card-title>
+            <span class="text-h5">Create</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-form v-model="form">
+                <v-row>
+                  <v-col cols="12" sm="12" md="12">
+                    <v-text-field
+                      label="Name"
+                      :rules="[required]"
+                      v-model="selectedFileName"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" sm="12" md="12">
+                    <v-file-input
+                      :rules="[required]"
+                      accept="image/png, image/jpeg, image/bmp"
+                      prepend-icon="mdi-camera"
+                      label="Photo"
+                      @change="handlePhotoUpload"
+                    ></v-file-input>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="3" sm="1" md="1">
+                    <v-btn
+                      :loading="loading"
+                      color="success"
+                      variant="elevated"
+                      @click="handleRequestUpload()"
+                    >
+                      Save
+                    </v-btn>
+                  </v-col>
+                  <v-col cols="3" sm="1" md="1">
+                    <v-btn
+                      color=""
+                      variant="elevated"
+                      @click="handlePhotoUploadClose()"
+                    >
+                      Close
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
+            </v-container>
+          </v-card-text>
+          <v-card-actions> </v-card-actions>
+        </template>
+        <template v-else>
+          <v-alert
+            density="compact"
+            type="error"
+            title="Unauthorized Access"
+            text=""
+          >
+            <br /><v-row>
+              <v-col cols="3" sm="1" md="1">
+                <v-btn
+                  color="warning"
+                  variant="elevated"
+                  @click="handlePhotoUploadClose()"
+                >
+                  Close
+                </v-btn>
+              </v-col> </v-row
+            ><br
+          /></v-alert>
+        </template>
       </v-card>
     </v-dialog>
   </v-row>
@@ -177,7 +184,7 @@
         :loading="loading"
         density="compact"
         variant="solo"
-        label="ค้นหาผลไม้"
+        label="Search photo"
         prepend-inner-icon="mdi-magnify"
         single-line
         hide-details
@@ -487,10 +494,10 @@ export default {
         formData.append("requestFileName", this.search);
         console.log("formData", formData);
         const headers = {
-        ...authHeader(),
-      };
+          ...authHeader(),
+        };
         // Use the PhotoService to make the API request to get the list of photos
-        const response = await PhotoService.getFilterPhotos(formData,headers);
+        const response = await PhotoService.getFilterPhotos(formData, headers);
         this.images = null;
         this.getImages = false;
         if (response.status === 401) {
